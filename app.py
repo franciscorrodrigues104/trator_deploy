@@ -11,13 +11,10 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 bucket_name = "fotos_detecao"
 
-
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-app = Flask(
-    __name__,
-    template_folder=os.path.join(BASE_DIR, "templates"),
-    static_folder=os.path.join(BASE_DIR, "static"),
-)
+# app.py está na raiz do projeto, ao lado de templates/ e static/,
+# por isso o Flask encontra-as automaticamente sem precisarmos de
+# calcular caminhos customizados.
+app = Flask(__name__)
 
 
 @app.route('/', methods=['GET'])

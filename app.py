@@ -149,11 +149,11 @@ def exportar_csv():
 
     buffer = io.StringIO()
     writer = csv.writer(buffer, delimiter=';')
-    writer.writerow(["Data", "Numero de Passagens"])
+    writer.writerow(["Data", "Numero de baldes"])
     for dia, contagem in linhas:
         writer.writerow([dia, contagem])
 
-    nome_ficheiro = f"relatorio_{data_inicio}_a_{data_fim}.csv"
+    nome_ficheiro = f"baldes_de_{data_inicio}_a_{data_fim}.csv"
 
     return Response(
         buffer.getvalue(),

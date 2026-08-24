@@ -129,6 +129,50 @@ def tabela_atualizada():
                            total=ctx["total_real"],
                            data_selecionada=ctx["data_selecionada"])
     
+def obter_dados_paginados(data_inicio, data_fim, tamanho_pagina=1000):
+    """
+    Vai buscar TODOS os registos entre data_inicio e data_fim,
+    contornando o limite de 1000 linhas do Supabase/PostgREST,
+    fazendo pedidos sucessivos em blocos.
+    """
+    inicio_ts = f"{data_inicio} 00:00:00"
+    fim_ts = f"{data_fim} 23:59:59"
+
+    todos_dados = []
+    pagina = 0
+
+    while True:
+        inicio_range = pagina * tamanho_pagina
+        fim_range = inicio_range + tamanho_pagina - 1
+
+        try:
+            response = supabase.table("detecoes")\
+                .select("*")\
+                .gte("timestamp_inicio", inicio_ts)\
+                .lte("timestamp_inicio", fim_ts)\
+                .order("timestamp_inicio", desc=False)\
+                .range(inicio_range, fim_range)\
+                .execute()
+
+            bloco = response.data
+
+        except Exception as e:
+            print(f"Erro ao processar dados (página {pagina}): {e}")
+            break
+
+        if not bloco:
+            break
+
+        todos_dados.extend(bloco)
+
+        if len(bloco) < tamanho_pagina:
+            # Já não há mais páginas a seguir
+            break
+
+        pagina += 1
+
+    return todos_dados
+    
 @app.route('/exportar_csv', methods=['GET'])
 def exportar_csv():
     data_inicio = request.args.get('data_inicio')
@@ -137,7 +181,7 @@ def exportar_csv():
     if not (data_inicio and data_fim):
         return "É necessário indicar data_inicio e data_fim.", 400
 
-    dados, _ = obter_dados(data_inicio=data_inicio, data_fim=data_fim)
+    dados, _ = obter_dados_paginados(data_inicio=data_inicio, data_fim=data_fim)
 
     # Agrupa por dia (extrai só a parte AAAA-MM-DD do timestamp_inicio)
     contagem_por_dia = {}

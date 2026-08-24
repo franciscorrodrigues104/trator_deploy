@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, Response
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 from supabase import create_client, Client
 from dotenv import load_dotenv
@@ -181,23 +181,33 @@ def exportar_csv():
     if not (data_inicio and data_fim):
         return "É necessário indicar data_inicio e data_fim.", 400
 
-    dados = obter_dados_paginados(data_inicio=data_inicio, data_fim=data_fim)
+    dados = obter_dados_paginados(data_inicio, data_fim)
 
-    # Agrupa por dia (extrai só a parte AAAA-MM-DD do timestamp_inicio)
     contagem_por_dia = {}
     for registo in dados:
         dia = registo["timestamp_inicio"][:10]
         contagem_por_dia[dia] = contagem_por_dia.get(dia, 0) + 1
 
-    linhas = sorted(contagem_por_dia.items())  # ordena por data crescente
+    # Gera todos os dias do intervalo e preenche com 0 os que não têm deteções
+    data_inicio_dt = datetime.strptime(data_inicio, "%Y-%m-%d")
+    data_fim_dt = datetime.strptime(data_fim, "%Y-%m-%d")
+
+    linhas = []
+    dia_atual = data_inicio_dt
+    while dia_atual <= data_fim_dt:
+        dia_str = dia_atual.strftime("%Y-%m-%d")
+        if dia_str not in contagem_por_dia:
+            contagem_por_dia[dia_str] = 0
+        linhas.append((dia_str, contagem_por_dia[dia_str]))
+        dia_atual += timedelta(days=1)
 
     buffer = io.StringIO()
     writer = csv.writer(buffer, delimiter=';')
-    writer.writerow(["Data", "Numero de baldes"])
+    writer.writerow(["Data", "Numero de Passagens"])
     for dia, contagem in linhas:
         writer.writerow([dia, contagem])
 
-    nome_ficheiro = f"baldes_de_{data_inicio}_a_{data_fim}.csv"
+    nome_ficheiro = f"relatorio_{data_inicio}_a_{data_fim}.csv"
 
     return Response(
         buffer.getvalue(),

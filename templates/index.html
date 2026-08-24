@@ -139,12 +139,13 @@
         <div class="filtro-separador"></div>
 
         <form action="/" method="GET" class="filtro-form">
-            <label for="data_inicio"><strong>De:</strong></label>
-            <input type="date" id="data_inicio" name="data_inicio" value="{{ data_inicio }}" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc;">
-            <label for="data_fim"><strong>Até:</strong></label>
-            <input type="date" id="data_fim" name="data_fim" value="{{ data_fim }}" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc;">
-            <button type="submit" style="padding: 6px 20px; cursor: pointer; background-color: #83BE42; color: white; border: none; border-radius: 4px;">🔍 Filtrar</button>
-        </form>
+    <label for="data_inicio"><strong>De:</strong></label>
+    <input type="date" id="data_inicio" name="data_inicio" value="{{ data_inicio }}" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc;">
+    <label for="data_fim"><strong>Até:</strong></label>
+    <input type="date" id="data_fim" name="data_fim" value="{{ data_fim }}" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc;">
+    <button type="submit" style="padding: 6px 20px; cursor: pointer; background-color: #83BE42; color: white; border: none; border-radius: 4px;">🔍 Filtrar</button>
+    <button type="submit" formaction="/exportar_csv" style="padding: 6px 20px; cursor: pointer; background-color: #2c3e50; color: white; border: none; border-radius: 4px;">📥 Exportar CSV</button>
+</form>
 
         <a href="/" style="text-decoration: none; font-size: 0.9rem; color: #666; align-self: center; margin-left: auto;">Limpar Filtros</a>
     </div>

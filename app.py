@@ -3,6 +3,8 @@ from datetime import datetime
 import os
 from supabase import create_client, Client
 from dotenv import load_dotenv
+import csv
+import io
 
 load_dotenv()
 
@@ -126,6 +128,38 @@ def tabela_atualizada():
                            detecoes=ctx["dados"],
                            total=ctx["total_real"],
                            data_selecionada=ctx["data_selecionada"])
+    
+@app.route('/exportar_csv', methods=['GET'])
+def exportar_csv():
+    data_inicio = request.args.get('data_inicio')
+    data_fim = request.args.get('data_fim')
+
+    if not (data_inicio and data_fim):
+        return "É necessário indicar data_inicio e data_fim.", 400
+
+    dados, _ = obter_dados(data_inicio=data_inicio, data_fim=data_fim)
+
+    # Agrupa por dia (extrai só a parte AAAA-MM-DD do timestamp_inicio)
+    contagem_por_dia = {}
+    for registo in dados:
+        dia = registo["timestamp_inicio"][:10]
+        contagem_por_dia[dia] = contagem_por_dia.get(dia, 0) + 1
+
+    linhas = sorted(contagem_por_dia.items())  # ordena por data crescente
+
+    buffer = io.StringIO()
+    writer = csv.writer(buffer, delimiter=';')
+    writer.writerow(["Data", "Numero de Passagens"])
+    for dia, contagem in linhas:
+        writer.writerow([dia, contagem])
+
+    nome_ficheiro = f"relatorio_{data_inicio}_a_{data_fim}.csv"
+
+    return Response(
+        buffer.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={nome_ficheiro}"}
+    )
 
 
 if __name__ == '__main__':

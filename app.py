@@ -181,7 +181,7 @@ def exportar_csv():
     if not (data_inicio and data_fim):
         return "É necessário indicar data_inicio e data_fim.", 400
 
-    dados, _ = obter_dados_paginados(data_inicio=data_inicio, data_fim=data_fim)
+    dados = obter_dados_paginados(data_inicio=data_inicio, data_fim=data_fim)
 
     # Agrupa por dia (extrai só a parte AAAA-MM-DD do timestamp_inicio)
     contagem_por_dia = {}
